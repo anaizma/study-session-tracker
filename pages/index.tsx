@@ -56,6 +56,8 @@ export default function Home() {
 
   useEffect(() => {
     refreshSessions();
+    const interval = setInterval(refreshSessions, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   async function refreshSessions() {
