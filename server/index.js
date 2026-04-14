@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -18,5 +20,6 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
+  console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
   console.log(`Server started on port ${port}`);
 });

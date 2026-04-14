@@ -16,7 +16,7 @@
     <div class="sessions">
       <div class="session-card" v-for="session in sessions" :key="session._id">
         <p class="date">
-          {{ `${session.createdAt.getMonth() + 1}/${session.createdAt.getDate()}/${session.createdAt.getFullYear()}` }}
+          {{ formatDate(session.createdAt) }}
         </p>
         <h3>{{ session.course }}</h3>
         <p><strong>Duration:</strong> {{ session.duration }}</p>
@@ -36,6 +36,7 @@ import SessionService from "./SessionService";
 
 export default {
   name: "App",
+
   data() {
     return {
       sessions: [],
@@ -47,17 +48,27 @@ export default {
       editId: null,
     };
   },
+
   async created() {
-    try {
-      this.sessions = await SessionService.getSessions();
-    } catch (err) {
-      this.error = "Could not load sessions.";
-    }
+    await this.refreshSessions();
   },
+
   methods: {
-    async refreshSessions() {
-      this.sessions = await SessionService.getSessions();
+    formatDate(date) {
+      const d = new Date(date);
+      return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
     },
+
+    async refreshSessions() {
+      try {
+        this.sessions = await SessionService.getSessions();
+        this.error = "";
+      } catch (err) {
+        this.error = "Could not load sessions.";
+        console.error("refreshSessions error:", err);
+      }
+    },
+
     clearForm() {
       this.course = "";
       this.duration = "";
@@ -65,6 +76,7 @@ export default {
       this.editing = false;
       this.editId = null;
     },
+
     formIsValid() {
       if (!this.course.trim() || !this.duration.trim() || !this.note.trim()) {
         this.error = "Please fill in course, duration, and note.";
@@ -73,18 +85,25 @@ export default {
       this.error = "";
       return true;
     },
+
     async createSession() {
       if (!this.formIsValid()) return;
 
-      await SessionService.insertSession({
-        course: this.course,
-        duration: this.duration,
-        note: this.note,
-      });
+      try {
+        await SessionService.insertSession({
+          course: this.course,
+          duration: this.duration,
+          note: this.note,
+        });
 
-      await this.refreshSessions();
-      this.clearForm();
+        await this.refreshSessions();
+        this.clearForm();
+      } catch (err) {
+        this.error = "Could not add session.";
+        console.error("createSession error:", err);
+      }
     },
+
     startEdit(session) {
       this.course = session.course;
       this.duration = session.duration;
@@ -93,22 +112,34 @@ export default {
       this.editId = session._id;
       this.error = "";
     },
+
     async updateSession() {
       if (!this.formIsValid()) return;
 
-      await SessionService.updateSession(this.editId, {
-        course: this.course,
-        duration: this.duration,
-        note: this.note,
-      });
+      try {
+        await SessionService.updateSession(this.editId, {
+          course: this.course,
+          duration: this.duration,
+          note: this.note,
+        });
 
-      await this.refreshSessions();
-      this.clearForm();
+        await this.refreshSessions();
+        this.clearForm();
+      } catch (err) {
+        this.error = "Could not update session.";
+        console.error("updateSession error:", err);
+      }
     },
+
     async deleteSession(id) {
-      this.error = "";
-      await SessionService.deleteSession(id);
-      await this.refreshSessions();
+      try {
+        await SessionService.deleteSession(id);
+        await this.refreshSessions();
+        this.error = "";
+      } catch (err) {
+        this.error = "Could not delete session.";
+        console.error("deleteSession error:", err);
+      }
     },
   },
 };

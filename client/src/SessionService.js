@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const url = "https://study-session-tracker-voko.onrender.com/api/sessions/";
+const url = "http://localhost:5001/api/sessions/";
 
 class SessionService {
   static getSessions() {
