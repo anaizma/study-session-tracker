@@ -1,23 +1,17 @@
 import axios from "axios";
 
-const url = "http://localhost:5001/api/sessions/";
+const url =
+  import.meta.env.DEV
+    ? "http://localhost:5001/api/sessions/"
+    : "/api/sessions/";
 
 class SessionService {
-  static getSessions() {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const res = await axios.get(url);
-        const data = res.data;
-        resolve(
-          data.map((session) => ({
-            ...session,
-            createdAt: new Date(session.createdAt),
-          }))
-        );
-      } catch (err) {
-        reject(err);
-      }
-    });
+  static async getSessions() {
+    const res = await axios.get(url);
+    return res.data.map((session) => ({
+      ...session,
+      createdAt: new Date(session.createdAt),
+    }));
   }
 
   static insertSession(session) {
